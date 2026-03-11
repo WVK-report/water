@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>World Vision Report</title>
+  <style>
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    iframe { border: none; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <iframe id="reportFrame" src=""></iframe>
+
+  <script>
+    // 1. 구글 앱 스크립트 배포 주소를 아래에 넣으세요.
+    const googleWebAppUrl = "https://script.google.com/macros/s/AKfycbzRTagwyX7l-m8Y-02yXkohMh6P39jVcyruLKdBFwhlJ7n4Kg0F9wI6Vbgvy0TF3TnZNA/exec";
+
+    // 2. 현재 주소창에서 id 파라미터를 가져옵니다.
+    const urlParams = new URLSearchParams(window.location.search);
+    const donationId = urlParams.get('id');
+
+    // 3. id가 있으면 구글 주소 뒤에 붙여서 iframe으로 띄웁니다.
+    if (donationId) {
+      document.getElementById('reportFrame').src = googleWebAppUrl + "?id=" + donationId;
+    } else {
+      document.body.innerHTML = "<h1>잘못된 접근입니다.</h1>";
+    }
+  </script>
+</body>
+</html>
