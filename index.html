@@ -3,28 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>World Vision Report</title>
   <style>
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f2f2f2; }
     iframe { border: none; width: 100%; height: 100%; }
+    .loading-text { 
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      font-family: sans-serif; color: #888; z-index: -1; 
+    }
   </style>
 </head>
 <body>
+  <div class="loading-text">리포트를 불러오는 중입니다...</div>
+  
   <iframe id="reportFrame" src=""></iframe>
 
   <script>
-    // 1. 구글 앱 스크립트 배포 주소를 아래에 넣으세요.
+    /**
+     * 1. 구글 앱 스크립트 배포 주소를 아래에 넣으세요.
+     * [팁] 웹앱을 수정할 때는 '배포 관리'에서 '새 버전'으로 업데이트해야 주소가 바뀌지 않습니다.
+     */
     const googleWebAppUrl = "https://script.google.com/macros/s/AKfycbzRTagwyX7l-m8Y-02yXkohMh6P39jVcyruLKdBFwhlJ7n4Kg0F9wI6Vbgvy0TF3TnZNA/exec";
 
-    // 2. 현재 주소창에서 id 파라미터를 가져옵니다.
+    /**
+     * 2. 현재 주소창에서 파라미터를 가져옵니다.
+     * 주소 뒤에 &v=123 처럼 버전을 임의로 붙여주면 캐시를 더 확실히 피할 수 있습니다.
+     */
     const urlParams = new URLSearchParams(window.location.search);
     const donationId = urlParams.get('id');
 
-    // 3. id가 있으면 구글 주소 뒤에 붙여서 iframe으로 띄웁니다.
+    const reportFrame = document.getElementById('reportFrame');
+
     if (donationId) {
-      document.getElementById('reportFrame').src = googleWebAppUrl + "?id=" + donationId;
+      // 3. id가 있으면 구글 주소 뒤에 붙여서 iframe으로 띄웁니다.
+      // 뒤에 현재 시간을 붙여 구글 서버 자체의 캐시도 방지합니다.
+      const timestamp = new Date().getTime();
+      reportFrame.src = googleWebAppUrl + "?id=" + donationId + "&cachebust=" + timestamp;
     } else {
-      document.body.innerHTML = "<h1>잘못된 접근입니다.</h1>";
+      document.body.innerHTML = "<div style='text-align:center; margin-top:50px;'><h1>잘못된 접근입니다.</h1><p>후원자 ID가 확인되지 않습니다.</p></div>";
     }
   </script>
 </body>
