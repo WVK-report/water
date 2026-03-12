@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>월드비전 식수사업</title>
+  <title>월드비전 식수사업 리포트</title>
   <style>
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f2f2f2; }
     iframe { border: none; width: 100%; height: 100%; }
@@ -35,9 +35,9 @@
 
     // GAS(iframe)로부터 오는 메시지 수신
     window.addEventListener('message', function(e) {
-      // 보안을 위해 특정 도메인만 허용하려면 e.origin 체크를 추가할 수 있습니다.
       const data = e.data;
       
+      // GAS에서 보낸 type이 'SHARE'인 경우 모바일 통합 공유 실행
       if (data.type === 'SHARE') {
         fnParentShare(data.title, data.text, data.url);
       } else if (data.type === 'COPY') {
@@ -46,16 +46,40 @@
     });
 
     async function fnParentShare(title, text, url) {
+      // 브라우저가 navigator.share를 지원하는지 확인
       if (navigator.share) {
         try {
-          await navigator.share({ title: title, text: text, url: url });
-        } catch (err) { console.log('공유 취소'); }
+          await navigator.share({
+            title: title,
+            text: text,
+            url: url
+          });
+          console.log('공유 성공');
+        } catch (err) {
+          console.log('공유 실패 또는 취소:', err);
+          // 공유 창이 떴으나 사용자가 취소한 게 아니라 '에러'가 난 경우 복사로 유도
+          if(err.name !== 'AbortError') fnParentCopy(url);
+        }
       } else {
+        // 지원하지 않는 환경(데스크톱 등)일 경우 링크 복사 실행
         fnParentCopy(url);
       }
     }
 
     function fnParentCopy(url) {
+      // 최신 클립보드 API 시도
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => {
+          alert("리포트 주소가 복사되었습니다!");
+        }).catch(() => {
+          fallbackCopyText(url);
+        });
+      } else {
+        fallbackCopyText(url);
+      }
+    }
+
+    function fallbackCopyText(url) {
       const t = document.createElement("textarea");
       document.body.appendChild(t);
       t.value = url;
