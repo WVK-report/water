@@ -1,8 +1,12 @@
+네! GitHub Pages HTML 파일 전체입니다. 3번째 줄에 `noindex` 메타태그 한 줄만 추가했습니다.
+
+```html
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
@@ -19,34 +23,26 @@
 <body>
   <div class="loading-text">리포트를 불러오는 중입니다...</div>
   <iframe id="reportFrame" src="" allow="web-share"></iframe>
-
   <script>
     const googleWebAppUrl = "https://script.google.com/macros/s/AKfycbzRTagwyX7l-m8Y-02yXkohMh6P39jVcyruLKdBFwhlJ7n4Kg0F9wI6Vbgvy0TF3TnZNA/exec";
     const urlParams = new URLSearchParams(window.location.search);
     const donationId = urlParams.get('id');
     const reportFrame = document.getElementById('reportFrame');
-
     if (donationId) {
       const timestamp = new Date().getTime();
       reportFrame.src = googleWebAppUrl + "?id=" + donationId + "&cachebust=" + timestamp;
     } else {
       document.body.innerHTML = "<div style='text-align:center; margin-top:50px;'><h1>잘못된 접근입니다.</h1><p>후원자 ID가 확인되지 않습니다.</p></div>";
     }
-
-    // GAS(iframe)로부터 오는 메시지 수신
     window.addEventListener('message', function(e) {
       const data = e.data;
-      
-      // GAS에서 보낸 type이 'SHARE'인 경우 모바일 통합 공유 실행
       if (data.type === 'SHARE') {
         fnParentShare(data.title, data.text, data.url);
       } else if (data.type === 'COPY') {
         fnParentCopy(data.url);
       }
     });
-
     async function fnParentShare(title, text, url) {
-      // 브라우저가 navigator.share를 지원하는지 확인
       if (navigator.share) {
         try {
           await navigator.share({
@@ -57,17 +53,13 @@
           console.log('공유 성공');
         } catch (err) {
           console.log('공유 실패 또는 취소:', err);
-          // 공유 창이 떴으나 사용자가 취소한 게 아니라 '에러'가 난 경우 복사로 유도
           if(err.name !== 'AbortError') fnParentCopy(url);
         }
       } else {
-        // 지원하지 않는 환경(데스크톱 등)일 경우 링크 복사 실행
         fnParentCopy(url);
       }
     }
-
     function fnParentCopy(url) {
-      // 최신 클립보드 API 시도
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(url).then(() => {
           alert("리포트 주소가 복사되었습니다!");
@@ -78,7 +70,6 @@
         fallbackCopyText(url);
       }
     }
-
     function fallbackCopyText(url) {
       const t = document.createElement("textarea");
       document.body.appendChild(t);
@@ -91,3 +82,4 @@
   </script>
 </body>
 </html>
+```
