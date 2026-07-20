@@ -31,7 +31,10 @@
     } else {
       document.body.innerHTML = "<div style='text-align:center; margin-top:50px;'><h1>잘못된 접근입니다.</h1><p>후원자 ID가 확인되지 않습니다.</p></div>";
     }
+    // 신뢰할 수 있는 발신지(앱스크립트 웹앱 주소)만 허용. 그 외 출처의 메시지는 무시.
+    const trustedOrigin = new URL(googleWebAppUrl).origin;
     window.addEventListener('message', function(e) {
+      if (e.origin !== trustedOrigin) return;
       const data = e.data;
       if (data.type === 'SHARE') {
         fnParentShare(data.title, data.text, data.url);
