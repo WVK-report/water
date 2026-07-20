@@ -47,10 +47,14 @@
       console.log('[카카오 SDK 진단] 정상적으로 로드 및 초기화되었습니다.');
     }
 
-    // 신뢰할 수 있는 발신지(앱스크립트 웹앱 주소)만 허용. 그 외 출처의 메시지는 무시.
-    const trustedOrigin = new URL(googleWebAppUrl).origin;
+    // 앱스크립트(HtmlService)가 iframe 콘텐츠를 실제로 서빙하는 도메인은
+    // script.google.com이 아니라 구글의 샌드박스 도메인(*.googleusercontent.com)입니다.
+    // 이 도메인은 구글이 전적으로 통제하므로, 접미사로 신뢰 여부를 판단합니다.
+    function isTrustedOrigin(origin) {
+      return /^https:\/\/[a-z0-9-]+\.googleusercontent\.com$/.test(origin);
+    }
     window.addEventListener('message', function(e) {
-      if (e.origin !== trustedOrigin) return;
+      if (!isTrustedOrigin(e.origin)) return;
       const data = e.data;
       if (data.type === 'SHARE') {
         fnKakaoShare(data.title, data.text, data.url, data.imageUrl);
