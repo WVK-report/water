@@ -8,6 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>월드비전 식수사업 리포트</title>
+  <!-- 카카오 JS SDK: 정식 카카오톡 공유하기(Kakao.Share)를 쓰기 위함. 버전은 카카오 디벨로퍼스 문서에서 최신 값으로 확인 후 교체 권장 -->
+  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
   <style>
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f2f2f2; }
     iframe { border: none; width: 100%; height: 100%; }
@@ -31,17 +33,42 @@
     } else {
       document.body.innerHTML = "<div style='text-align:center; margin-top:50px;'><h1>잘못된 접근입니다.</h1><p>후원자 ID가 확인되지 않습니다.</p></div>";
     }
+    // ↓↓↓ 카카오 디벨로퍼스에서 발급받은 JavaScript 키로 교체하세요 ↓↓↓
+    const KAKAO_JS_KEY = "2a06402bffbfd011de0c92d6a8a3989a";
+    if (window.Kakao && !Kakao.isInitialized()) {
+      Kakao.init(KAKAO_JS_KEY);
+    }
+
     // 신뢰할 수 있는 발신지(앱스크립트 웹앱 주소)만 허용. 그 외 출처의 메시지는 무시.
     const trustedOrigin = new URL(googleWebAppUrl).origin;
     window.addEventListener('message', function(e) {
       if (e.origin !== trustedOrigin) return;
       const data = e.data;
       if (data.type === 'SHARE') {
-        fnParentShare(data.title, data.text, data.url);
+        fnKakaoShare(data.title, data.text, data.url, data.imageUrl);
       } else if (data.type === 'COPY') {
         fnParentCopy(data.url);
       }
     });
+    function fnKakaoShare(title, text, url, imageUrl) {
+      if (window.Kakao && Kakao.isInitialized()) {
+        Kakao.Share.sendDefault({
+          objectType: 'feed',
+          content: {
+            title: title,
+            description: text,
+            imageUrl: imageUrl,
+            link: { mobileWebUrl: url, webUrl: url }
+          },
+          buttons: [
+            { title: '리포트 보기', link: { mobileWebUrl: url, webUrl: url } }
+          ]
+        });
+      } else {
+        // SDK 로드/초기화 실패 시 예전 방식(OS 공유창)으로 대체
+        fnParentShare(title, text, url);
+      }
+    }
     async function fnParentShare(title, text, url) {
       if (navigator.share) {
         try {
