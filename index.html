@@ -8,8 +8,8 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>월드비전 식수사업 리포트</title>
-  <!-- 카카오 JS SDK: 정식 카카오톡 공유하기(Kakao.Share)를 쓰기 위함. 버전은 카카오 디벨로퍼스 문서에서 최신 값으로 확인 후 교체 권장 -->
-  <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  <!-- 카카오 JS SDK: 정식 카카오톡 공유하기(Kakao.Share)를 쓰기 위함 (v2.8.1) -->
+  <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.8.1/kakao.min.js" integrity="sha384-OL+ylM/iuPLtW5U3XcvLSGhE8JzReKDank5InqlHGWPhb4140/yrBw0bg0y7+C9J" crossorigin="anonymous"></script>
   <style>
     body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background-color: #f2f2f2; }
     iframe { border: none; width: 100%; height: 100%; }
@@ -38,6 +38,14 @@
     if (window.Kakao && !Kakao.isInitialized()) {
       Kakao.init(KAKAO_JS_KEY);
     }
+    // 진단용: 문제가 생기면 F12(개발자 도구) > Console 탭에서 이 로그를 확인하세요.
+    if (!window.Kakao) {
+      console.warn('[카카오 SDK 진단] window.Kakao가 없습니다 = SDK 스크립트 자체가 로드되지 않았습니다. <script> 주소가 최신인지 확인 필요.');
+    } else if (!Kakao.isInitialized()) {
+      console.warn('[카카오 SDK 진단] Kakao 객체는 있는데 초기화가 안 됐습니다. KAKAO_JS_KEY 값을 확인하세요.');
+    } else {
+      console.log('[카카오 SDK 진단] 정상적으로 로드 및 초기화되었습니다.');
+    }
 
     // 신뢰할 수 있는 발신지(앱스크립트 웹앱 주소)만 허용. 그 외 출처의 메시지는 무시.
     const trustedOrigin = new URL(googleWebAppUrl).origin;
@@ -52,22 +60,28 @@
     });
     function fnKakaoShare(title, text, url, imageUrl) {
       if (window.Kakao && Kakao.isInitialized()) {
-        Kakao.Share.sendDefault({
-          objectType: 'feed',
-          content: {
-            title: title,
-            description: text,
-            imageUrl: imageUrl,
-            link: { mobileWebUrl: url, webUrl: url }
-          },
-          buttons: [
-            { title: '리포트 보기', link: { mobileWebUrl: url, webUrl: url } }
-          ]
-        });
+        try {
+          Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+              title: title,
+              description: text,
+              imageUrl: imageUrl,
+              link: { mobileWebUrl: url, webUrl: url }
+            },
+            buttons: [
+              { title: '리포트 보기', link: { mobileWebUrl: url, webUrl: url } }
+            ]
+          });
+          return;
+        } catch (err) {
+          console.error('[카카오 공유 진단] Kakao.Share.sendDefault 호출 중 에러:', err);
+        }
       } else {
-        // SDK 로드/초기화 실패 시 예전 방식(OS 공유창)으로 대체
-        fnParentShare(title, text, url);
+        console.warn('[카카오 공유 진단] SDK가 준비되지 않아 기본 공유창으로 대체합니다.');
       }
+      // SDK 로드/초기화/호출 실패 시 예전 방식(OS 공유창)으로 대체
+      fnParentShare(title, text, url);
     }
     async function fnParentShare(title, text, url) {
       if (navigator.share) {
